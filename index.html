@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leafy Café | مقهى ليفي</title>
+<style>
+/* ===================== المتغيرات والهوية البصرية ===================== */
+:root{
+  --forest:#1e3d2f;      /* الأخضر الغابي */
+  --forest-light:#2d5a45;
+  --gold:#c9a227;        /* الذهبي */
+  --gold-light:#e3c35b;
+  --beige:#f5efe1;       /* البيج الدافئ */
+  --beige-dark:#e8dcc3;
+  --text:#2a2a2a;
+  --white:#fffdf7;
+  --danger:#b23a3a;
+  --success:#3a7d44;
+  --shadow:0 4px 18px rgba(30,61,47,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  background:var(--beige);
+  color:var(--text);
+  line-height:1.6;
+}
+body[dir="ltr"]{font-family:'Segoe UI',Arial,sans-serif}
+img{max-width:100%}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+
+/* ===================== الشعار والهيدر ===================== */
+header{
+  background:var(--forest);
+  color:var(--beige);
+  padding:.8rem 1.5rem;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 12px rgba(0,0,0,.25);
+  display:flex;flex-wrap:wrap;align-items:center;gap:1rem;
+  justify-content:space-between;
+}
+.logo{display:flex;align-items:center;gap:.7rem;font-weight:700;font-size:1.4rem}
+.logo svg{width:44px;height:44px;flex-shrink:0}
+.logo .brand{color:var(--gold)}
+nav{display:flex;gap:.4rem;flex-wrap:wrap}
+nav button{
+  background:transparent;border:1px solid transparent;color:var(--beige);
+  padding:.5rem .9rem;border-radius:8px;font-size:.95rem;transition:.2s;
+}
+nav button:hover,nav button.active{
+  background:var(--forest-light);border-color:var(--gold);color:var(--gold-light);
+}
+.top-tools{display:flex;gap:.5rem;align-items:center}
+.lang-select{
+  background:var(--forest-light);color:var(--beige);border:1px solid var(--gold);
+  border-radius:8px;padding:.4rem .6rem;font-size:.9rem;
+}
+.cart-btn{
+  background:var(--gold);color:var(--forest);border:none;border-radius:8px;
+  padding:.5rem .9rem;font-weight:700;position:relative;
+}
+.cart-btn .badge{
+  position:absolute;top:-8px;inset-inline-end:-8px;background:var(--danger);
+  color:#fff;border-radius:50%;width:22px;height:22px;font-size:.75rem;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ===================== عام ===================== */
+main{max-width:1200px;margin:0 auto;padding:1.5rem}
+.page{display:none;animation:fade .35s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1,h2,h3{color:var(--forest)}
+.section-title{
+  font-size:1.9rem;margin-bottom:.3rem;display:flex;align-items:center;gap:.6rem;
+}
+.section-title::after{content:"";flex:1;height:3px;background:linear-gradient(to left,var(--gold),transparent);border-radius:2px}
+.section-sub{color:#6b6b6b;margin-bottom:1.5rem}
+
+/* بطاقات الأصناف */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.2rem}
+.card{
+  background:var(--white);border-radius:16px;overflow:hidden;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;
+  border:1px solid var(--beige-dark);transition:.25s;
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(30,61,47,.2)}
+.card .icon{
+  height:110px;display:flex;align-items:center;justify-content:center;
+  font-size:3rem;background:linear-gradient(135deg,var(--forest),var(--forest-light));
+}
+.card .body{padding:1rem;display:flex;flex-direction:column;gap:.4rem;flex:1}
+.card h3{font-size:1.15rem}
+.card .desc{font-size:.85rem;color:#777;flex:1}
+.card .price{color:var(--gold);font-weight:800;font-size:1.15rem}
+.card .add-btn{
+  background:var(--forest);color:var(--beige);border:none;border-radius:10px;
+  padding:.55rem;font-weight:600;transition:.2s;
+}
+.card .add-btn:hover{background:var(--gold);color:var(--forest)}
+
+/* تبويبات الفئات */
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.tabs button{
+  background:var(--white);border:1px solid var(--beige-dark);color:var(--forest);
+  padding:.5rem 1rem;border-radius:999px;font-weight:600;transition:.2s;
+}
+.tabs button.active{background:var(--forest);color:var(--gold-light);border-color:var(--forest)}
+
+/* ===================== السلة ===================== */
+.cart-panel{
+  position:fixed;inset-block:0;inset-inline-end:0;width:min(400px,92vw);
+  background:var(--white);box-shadow:-4px 0 24px rgba(0,0,0,.2);
+  transform:translateX(110%);transition:.35s;z-index:200;
+  display:flex;flex-direction:column;
+}
+body[dir="ltr"] .cart-panel{transform:translateX(110%)}
+.cart-panel.open{transform:translateX(0)!important}
+.cart-panel header{
+  background:var(--forest);position:static;box-shadow:none;padding:1rem;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.cart-items{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.8rem}
+.cart-item{
+  display:flex;gap:.7rem;align-items:center;background:var(--beige);
+  border-radius:10px;padding:.6rem;border:1px solid var(--beige-dark);
+}
+.cart-item .ci-name{flex:1;font-weight:600;font-size:.95rem}
+.cart-item .ci-price{color:var(--gold);font-weight:700;font-size:.9rem}
+.qty{display:flex;align-items:center;gap:.4rem}
+.qty button{
+  width:26px;height:26px;border-radius:50%;border:none;
+  background:var(--forest);color:var(--beige);font-weight:700;
+}
+.cart-footer{padding:1rem;border-top:2px solid var(--beige-dark);display:flex;flex-direction:column;gap:.6rem}
+.cart-footer .total{display:flex;justify-content:space-between;font-weight:800;font-size:1.1rem;color:var(--forest)}
+.cart-footer input{border:1px solid var(--beige-dark);border-radius:8px;padding:.6rem;background:var(--beige)}
+.btn-primary{
+  background:var(--forest);color:var(--beige);border:none;border-radius:10px;
+  padding:.8rem;font-weight:700;font-size:1rem;transition:.2s;
+}
+.btn-primary:hover{background:var(--gold);color:var(--forest)}
+.btn-gold{
+  background:var(--gold);color:var(--forest);border:none;border-radius:10px;
+  padding:.7rem 1.2rem;font-weight:700;transition:.2s;
+}
+.btn-gold:hover{background:var(--gold-light)}
+
+/* ===================== الحجز ===================== */
+.form-box{
+  background:var(--white);border-radius:16px;padding:1.5rem;
+  box-shadow:var(--shadow);max-width:600px;border:1px solid var(--beige-dark);
+}
+.form-box label{display:block;font-weight:600;margin:.8rem 0 .3rem;color:var(--forest)}
+.form-box input,.form-box select,.form-box textarea{
+  width:100%;padding:.65rem;border:1px solid var(--beige-dark);
+  border-radius:10px;background:var(--beige);font-size:.95rem;
+}
+.form-box button{margin-top:1.2rem;width:100%}
+
+/* ===================== الألعاب ===================== */
+.notice{
+  background:var(--gold);color:var(--forest);padding:1rem 1.3rem;
+  border-radius:12px;font-weight:700;text-align:center;margin-bottom:1.5rem;
+  border:2px dashed var(--forest);
+}
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem}
+.game-card{
+  background:var(--white);border-radius:14px;padding:1.3rem;text-align:center;
+  box-shadow:var(--shadow);border:1px solid var(--beige-dark);
+}
+.game-card .g-icon{font-size:2.6rem;margin-bottom:.5rem}
+.game-card h4{color:var(--forest);font-size:1rem}
+
+/* ===================== لوحة الإدارة ===================== */
+.login-box{
+  max-width:400px;margin:3rem auto;background:var(--white);padding:2rem;
+  border-radius:16px;box-shadow:var(--shadow);border-top:5px solid var(--gold);
+}
+.login-box h2{text-align:center;margin-bottom:1.2rem}
+.login-box input{width:100%;padding:.7rem;margin:.4rem 0;border:1px solid var(--beige-dark);border-radius:10px;background:var(--beige)}
+.admin-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.admin-tabs button{
+  background:var(--white);border:1px solid var(--beige-dark);padding:.6rem 1.1rem;
+  border-radius:10px;font-weight:700;color:var(--forest);
+}
+.admin-tabs button.active{background:var(--forest);color:var(--gold-light)}
+.admin-section{display:none}
+.admin-section.active{display:block}
+table{width:100%;border-collapse:collapse;background:var(--white);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);font-size:.9rem}
+th{background:var(--forest);color:var(--beige);padding:.7rem;text-align:start}
+td{padding:.6rem .7rem;border-bottom:1px solid var(--beige-dark)}
+tr:last-child td{border:none}
+.badge-status{padding:.2rem .6rem;border-radius:999px;font-size:.78rem;font-weight:700;color:#fff;white-space:nowrap}
+.s-pending{background:#b8860b}
+.s-preparing{background:#2d5a45}
+.s-done{background:var(--success)}
+.btn-sm{border:none;border-radius:8px;padding:.35rem .7rem;font-size:.8rem;font-weight:700}
+.btn-edit{background:var(--gold);color:var(--forest)}
+.btn-del{background:var(--danger);color:#fff}
+.btn-next{background:var(--forest);color:var(--beige)}
+.admin-form{display:grid;gap:.6rem;background:var(--white);padding:1.2rem;border-radius:12px;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.admin-form input,.admin-form select,.admin-form textarea{padding:.6rem;border:1px solid var(--beige-dark);border-radius:8px;background:var(--beige)}
+.admin-form .row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media(max-width:600px){.admin-form .row{grid-template-columns:1fr}}
+
+/* توست */
+.toast{
+  position:fixed;bottom:1.5rem;inset-inline-start:50%;transform:translateX(-50%) translateY(120%);
+  background:var(--forest);color:var(--beige);padding:.9rem 1.6rem;border-radius:12px;
+  font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:500;transition:.4s;
+  border-inline-start:5px solid var(--gold);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* فوتر */
+footer{
+  background:var(--forest);color:var(--beige);text-align:center;
+  padding:1.5rem;margin-top:3rem;font-size:.9rem;
+}
+footer .gold{color:var(--gold)}
+</style>
+</head>
+<body dir="rtl">
+
+<!-- ============ الهيدر ============ -->
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 64 64" fill="none">
+      <circle cx="32" cy="32" r="30" fill="#c9a227"/>
+      <path d="M32 12c-10 6-16 14-16 24 0 8 7 14 16 16 9-2 16-8 16-16 0-10-6-18-16-24z" fill="#1e3d2f"/>
+      <path d="M32 18v26M32 30c-4-2-7-5-8-9M32 38c4-2 7-5 8-9" stroke="#f5efe1" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    </svg>
+    <span>Leafy <span class="brand">Café</span></span>
+  </div>
+  <nav id="mainNav">
+    <button data-page="menu" class="active">القائمة</button>
+    <button data-page="bookings">حجز المناسبات</button>
+    <button data-page="games">الألعاب</button>
+    <button data-page="admin">لوحة الإدارة</button>
+  </nav>
+  <div class="top-tools">
+    <select class="lang-select" id="langSelect">
+      <option value="ar">🇩🇿 العربية</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="es">🇪🇸 Español</option>
+    </select>
+    <button class="cart-btn" onclick="toggleCart()">🛒 <span id="cartCount" class="badge">0</span></button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ صفحة القائمة ============ -->
+  <section id="page-menu" class="page active">
+    <h1 class="section-title" data-i18n="menuTitle">قائمة الطعام</h1>
+    <p class="section-sub" data-i18n="menuSub">اختر ما يحلو لك من قائمتنا الطازجة</p>
+    <div class="tabs" id="menuTabs"></div>
+    <div class="grid" id="menuGrid"></div>
+  </section>
+
+  <!-- ============ صفحة الحجز ============ -->
+  <section id="page-bookings" class="page">
+    <h1 class="section-title" data-i18n="bookTitle">حجز المناسبات</h1>
+    <p class="section-sub" data-i18n="bookSub">احجز طاولتك لمناسبتك الخاصة — أعياد ميلاد، حفلات، لقاءات</p>
+    <div class="form-box">
+      <label data-i18n="name">الاسم الكامل</label>
+      <input id="bkName" placeholder="اسمك">
+      <label data-i18n="phone">رقم الهاتف</label>
+      <input id="bkPhone" placeholder="05xxxxxxxx">
+      <label data-i18n="date">التاريخ</label>
+      <input type="date" id="bkDate">
+      <label data-i18n="people">عدد الأشخاص</label>
+      <input type="number" id="bkPeople" min="1" value="4">
+      <label data-i18n="occasion">نوع المناسبة</label>
+      <select id="bkOccasion">
+        <option>🎂 عيد ميلاد</option>
+        <option>🎉 حفلة</option>
+        <option>💼 لقاء عمل</option>
+        <option>👨‍👩‍👧 عائلي</option>
+        <option>🤝 أخرى</option>
+      </select>
+      <label data-i18n="notes">ملاحظات</label>
+      <textarea id="bkNotes" rows="2" placeholder="أي تفاصيل إضافية..."></textarea>
+      <button class="btn-primary" onclick="submitBooking()" data-i18n="submit">إرسال الحجز</button>
+    </div>
+  </section>
+
+  <!-- ============ صفحة الألعاب ============ -->
+  <section id="page-games" class="page">
+    <h1 class="section-title" data-i18n="gamesTitle">الألعاب الجماعية</h1>
+    <div class="notice" data-i18n="gamesNotice">🎲 الألعاب مجانية بشرط إعادتها إلى مكانها</div>
+    <div class="games-grid" id="gamesGrid"></div>
+  </section>
+
+  <!-- ============ لوحة الإدارة ============ -->
+  <section id="page-admin" class="page">
+    <!-- تسجيل الدخول -->
+    <div id="adminLogin" class="login-box">
+      <h2 data-i18n="adminLogin">دخول لوحة الإدارة</h2>
+      <input id="admEmail" placeholder="البريد الإلكتروني" value="admin@leafy.dz">
+      <input id="admPass" type="password" placeholder="كلمة السر">
+      <button class="btn-primary" style="width:100%;margin-top:.6rem" onclick="adminLogin()" data-i18n="login">دخول</button>
+    </div>
+
+    <!-- لوحة الإدارة -->
+    <div id="adminPanel" style="display:none">
+      <h1 class="section-title" data-i18n="adminTitle">لوحة التحكم</h1>
+      <p class="section-sub">
+        <button class="btn-sm btn-del" onclick="adminLogout()" style="float:inline-end" data-i18n="logout">خروج</button>
+      </p>
+      <div class="admin-tabs">
+        <button class="active" onclick="adminTab('menu',this)" data-i18n="tabMenu">إدارة القائمة</button>
+        <button onclick="adminTab('orders',this)" data-i18n="tabOrders">الطلبات المباشرة</button>
+        <button onclick="adminTab('bookings',this)" data-i18n="tabBookings">الحجوزات</button>
+      </div>
+
+      <!-- إدارة القائمة -->
+      <div id="admin-menu" class="admin-section active">
+        <div class="admin-form">
+          <div class="row">
+            <input id="afName" placeholder="اسم الصنف">
+            <select id="afCat">
+              <option value="coffee">☕ قهوة</option>
+              <option value="smoothie">🥤 سموذي</option>
+              <option value="tea">🧊 شاي مثلج</option>
+              <option value="mocktail">🍹 موكتايل</option>
+              <option value="milkshake">🥛 ميلك شيك</option>
+              <option value="savory">🥪 موالح / وجبات</option>
+              <option value="healthy">🥗 أطباق صحية</option>
+            </select>
+          </div>
+          <input id="afDesc" placeholder="الوصف">
+          <div class="row">
+            <input id="afPrice" type="number" placeholder="السعر (دج)" min="0">
+            <input id="afIcon" placeholder="أيقونة (مثال: ☕)">
+          </div>
+          <button class="btn-primary" onclick="addMenuItem()" data-i18n="addItem">➕ إضافة صنف</button>
+        </div>
+        <table id="menuTable">
+          <thead><tr>
+            <th data-i18n="thName">الصنف</th>
+            <th data-i18n="thCat">الفئة</th>
+            <th data-i18n="thPrice">السعر</th>
+            <th data-i18n="thActions">إجراءات</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- الطلبات -->
+      <div id="admin-orders" class="admin-section">
+        <table id="ordersTable">
+          <thead><tr>
+            <th data-i18n="thTable">الطاولة</th>
+            <th data-i18n="thCustomer">الزبون</th>
+            <th data-i18n="thItems">الطلبات</th>
+            <th data-i18n="thTotal">المجموع</th>
+            <th data-i18n="thStatus">الحالة</th>
+            <th data-i18n="thActions">إجراءات</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- الحجوزات -->
+      <div id="admin-bookings" class="admin-section">
+        <table id="bookingsTable">
+          <thead><tr>
+            <th data-i18n="thName">الاسم</th>
+            <th data-i18n="thPhone">الهاتف</th>
+            <th data-i18n="thDate">التاريخ</th>
+            <th data-i18n="thPeople">الأشخاص</th>
+            <th data-i18n="thOccasion">المناسبة</th>
+            <th data-i18n="thNotes">ملاحظات</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ السلة الجانبية ============ -->
+<aside class="cart-panel" id="cartPanel">
+  <header>
+    <strong style="font-size:1.1rem" data-i18n="cartTitle">🛒 سلة الطلبات</strong>
+    <button class="btn-sm btn-del" onclick="toggleCart()">✕</button>
+  </header>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="total"><span data-i18n="total">المجموع</span><span id="cartTotal">0 دج</span></div>
+    <input id="custName" placeholder="اسمك">
+    <input id="tableNum" type="number" placeholder="رقم الطاولة" min="1">
+    <button class="btn-primary" onclick="sendOrder()" data-i18n="sendOrder">إرسال الطلب</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <p>🍃 <span class="gold">Leafy Café</span> — © 2026 · <span data-i18n="footer">صُنع بحب</span></p>
+</footer>
+
+<script>
+/* ===================== البيانات الأولية ===================== */
+const DEFAULT_MENU = [
+  // قهوة
+  {id:1,cat:"coffee",name:"إسبريسو",desc:"قهوة مركزة كلاسيكية",price:250,icon:"☕"},
+  {id:2,cat:"coffee",name:"كابتشينو",desc:"إسبريسو + حليب مبخر + رغوة",price:400,icon:"☕"},
+  {id:3,cat:"coffee",name:"لاتيه",desc:"قهوة ناعمة مع حليب",price:420,icon:"☕"},
+  {id:4,cat:"coffee",name:"قهوة تركية",desc:"تقليدية على الرمل",price:300,icon:"☕"},
+  // سموذي
+  {id:5,cat:"smoothie",name:"سموذي فراولة",desc:"فراولة طازجة + حليب",price:550,icon:"🍓"},
+  {id:6,cat:"smoothie",name:"سموذي مانجو",desc:"مانجو + زبادي",price:580,icon:"🥭"},
+  {id:7,cat:"smoothie",name:"سموذي أفوكادو",desc:"أفوكادو + عسل",price:650,icon:"🥑"},
+  // شاي مثلج
+  {id:8,cat:"tea",name:"شاي مثلج ليمون",desc:"شاي أسود + ليمون + ثلج",price:350,icon:"🧊"},
+  {id:9,cat:"tea",name:"شاي مثلج خوخ",desc:"شاي + خوخ طازج",price:380,icon:"🍑"},
+  // موكتايل
+  {id:10,cat:"mocktail",name:"موهيتو",desc:"نعناع + ليمون + صودا",price:450,icon:"🍹"},
+  {id:11,cat:"mocktail",name:"بلو لاغون",desc:"موكتايل أزرق منعش",price:500,icon:"🍹"},
+  // ميلك شيك
+  {id:12,cat:"milkshake",name:"ميلك شيك شوكولا",desc:"شوكولا + آيس كريم",price:600,icon:"🥛"},
+  {id:13,cat:"milkshake",name:"ميلك شيك أوريو",desc:"أوريو + حليب + كريمة",price:680,icon:"🥛"},
+  // موالح
+  {id:14,cat:"savory",name:"ساندويتش دجاج",desc:"دجاج مشوي + خضار",price:750,icon:"🥪"},
+  {id:15,cat:"savory",name:"برغر ليفي",desc:"لحم + جبن + صوص خاص",price:900,icon:"🍔"},
+  // صحي
+  {id:16,cat:"healthy",name:"سلطة سيزر",desc:"خضار + دجاج + صوص",price:800,icon:"🥗"},
+  {id:17,cat:"healthy",name:"بول كينوا",desc:"كينوا + أفوكادو + حمص",price:850,icon:"🥗"}
+];
+
+const GAMES = [
+  {icon:"♟️",name:"شطرنج"},{icon:"🎲",name:"طاولة زهر"},
+  {icon:"🃏",name:"أونو"},{icon:"🎯",name:"دومينو"},
+  {icon:"🎮",name:"لعبة الكلمات"},{icon:"🧩",name:"بازل"}
+];
+
+/* ===================== الترجمة ===================== */
+const I18N = {
+  ar:{menuTitle:"قائمة الطعام",menuSub:"اختر ما يحلو لك من قائمتنا الطازجة",bookTitle:"حجز المناسبات",bookSub:"احجز طاولتك لمناسبتك الخاصة — أعياد ميلاد، حفلات، لقاءات",name:"الاسم الكامل",phone:"رقم الهاتف",date:"التاريخ",people:"عدد الأشخاص",occasion:"نوع المناسبة",notes:"ملاحظات",submit:"إرسال الحجز",gamesTitle:"الألعاب الجماعية",gamesNotice:"🎲 الألعاب مجانية بشرط إعادتها إلى مكانها",adminLogin:"دخول لوحة الإدارة",login:"دخول",logout:"خروج",adminTitle:"لوحة التحكم",tabMenu:"إدارة القائمة",tabOrders:"الطلبات المباشرة",tabBookings:"الحجوزات",addItem:"➕ إضافة صنف",thName:"الصنف",thCat:"الفئة",thPrice:"السعر",thActions:"إجراءات",thTable:"الطاولة",thCustomer:"الزبون",thItems:"الطلبات",thTotal:"المجموع",thStatus:"الحالة",thPhone:"الهاتف",thDate:"التاريخ",thPeople:"الأشخاص",thOccasion:"المناسبة",thNotes:"ملاحظات",cartTitle:"🛒 سلة الطلبات",total:"المجموع",sendOrder:"إرسال الطلب",footer:"صُنع بحب",addedToCart:"تمت الإضافة للسلة ✅",orderSent:"تم إرسال الطلب ✅",bookingSent:"تم إرسال الحجز ✅",fillAll:"يرجى ملء جميع الحقول",loginFail:"بيانات الدخول غير صحيحة ❌",loginOk:"مرحباً بك في لوحة التحكم 👋",edit:"تعديل",del:"حذف",next:"التالي",pending:"قيد الانتظار",preparing:"جاري التحضير",done:"مكتمل"},
+  fr:{menuTitle:"Notre Menu",menuSub:"Choisissez ce qui vous plaît",bookTitle:"Réservations d'événements",bookSub:"Réservez votre table pour un événement spécial",name:"Nom complet",phone:"Téléphone",date:"Date",people:"Nombre de personnes",occasion:"Type d'événement",notes:"Notes",submit:"Envoyer la réservation",gamesTitle:"Jeux de société",gamesNotice:"🎲 Jeux gratuits à condition de les remettre en place",adminLogin:"Connexion Admin",login:"Connexion",logout:"Déconnexion",adminTitle:"Tableau de bord",tabMenu:"Gérer le menu",tabOrders:"Commandes",tabBookings:"Réservations",addItem:"➕ Ajouter un article",thName:"Article",thCat:"Catégorie",thPrice:"Prix",thActions:"Actions",thTable:"Table",thCustomer:"Client",thItems:"Articles",thTotal:"Total",thStatus:"Statut",thPhone:"Téléphone",thDate:"Date",thPeople:"Personnes",thOccasion:"Événement",thNotes:"Notes",cartTitle:"🛒 Panier",total:"Total",sendOrder:"Envoyer la commande",footer:"Fait avec amour",addedToCart:"Ajouté au panier ✅",orderSent:"Commande envoyée ✅",bookingSent:"Réservation envoyée ✅",fillAll:"Veuillez remplir tous les champs",loginFail:"Identifiants incorrects ❌",loginOk:"Bienvenue Admin 👋",edit:"Modifier",del:"Supprimer",next:"Suivant",pending:"En attente",preparing:"En préparation",done:"Terminé"},
+  en:{menuTitle:"Our Menu",menuSub:"Pick what you like from our fresh menu",bookTitle:"Event Bookings",bookSub:"Book your table for a special occasion",name:"Full Name",phone:"Phone",date:"Date",people:"Number of people",occasion:"Occasion type",notes:"Notes",submit:"Submit Booking",gamesTitle:"Board Games",gamesNotice:"🎲 Games are free — please return them to their place",adminLogin:"Admin Login",login:"Login",logout:"Logout",adminTitle:"Dashboard",tabMenu:"Manage Menu",tabOrders:"Live Orders",tabBookings:"Bookings",addItem:"➕ Add Item",thName:"Item",thCat:"Category",thPrice:"Price",thActions:"Actions",thTable:"Table",thCustomer:"Customer",thItems:"Items",thTotal:"Total",thStatus:"Status",thPhone:"Phone",thDate:"Date",thPeople:"People",thOccasion:"Occasion",thNotes:"Notes",cartTitle:"🛒 Cart",total:"Total",sendOrder:"Send Order",footer:"Made with love",addedToCart:"Added to cart ✅",orderSent:"Order sent ✅",bookingSent:"Booking sent ✅",fillAll:"Please fill all fields",loginFail:"Wrong credentials ❌",loginOk:"Welcome Admin 👋",edit:"Edit",del:"Delete",next:"Next",pending:"Pending",preparing:"Preparing",done:"Done"},
+  es:{menuTitle:"Nuestro Menú",menuSub:"Elige lo que te guste",bookTitle:"Reservas de eventos",bookSub:"Reserva tu mesa para una ocasión especial",name:"Nombre completo",phone:"Teléfono",date:"Fecha",people:"Número de personas",occasion:"Tipo de evento",notes:"Notas",submit:"Enviar reserva",gamesTitle:"Juegos de mesa",gamesNotice:"🎲 Juegos gratis con la condición de devolverlos a su lugar",adminLogin:"Acceso Admin",login:"Entrar",logout:"Salir",adminTitle:"Panel de control",tabMenu:"Gestionar menú",tabOrders:"Pedidos",tabBookings:"Reservas",addItem:"➕ Añadir artículo",thName:"Artículo",thCat:"Categoría",thPrice:"Precio",thActions:"Acciones",thTable:"Mesa",thCustomer:"Cliente",thItems:"Artículos",thTotal:"Total",thStatus:"Estado",thPhone:"Teléfono",thDate:"Fecha",thPeople:"Personas",thOccasion:"Ocasión",thNotes:"Notas",cartTitle:"🛒 Carrito",total:"Total",sendOrder:"Enviar pedido",footer:"Hecho con amor",addedToCart:"Añadido al carrito ✅",orderSent:"Pedido enviado ✅",bookingSent:"Reserva enviada ✅",fillAll:"Por favor complete todos los campos",loginFail:"Credenciales incorrectas ❌",loginOk:"Bienvenido Admin 👋",edit:"Editar",del:"Eliminar",next:"Siguiente",pending:"Pendiente",preparing:"Preparando",done:"Completado"}
+};
+const CAT_NAMES = {
+  ar:{coffee:"☕ قهوة",smoothie:"🥤 سموذي",tea:"🧊 شاي مثلج",mocktail:"🍹 موكتايل",milkshake:"🥛 ميلك شيك",savory:"🥪 موالح / وجبات",healthy:"🥗 أطباق صحية"},
+  fr:{coffee:"☕ Café",smoothie:"🥤 Smoothie",tea:"🧊 Thé glacé",mocktail:"🍹 Mocktail",milkshake:"🥛 Milkshake",savory:"🥪 Salé",healthy:"🥗 Sain"},
+  en:{coffee:"☕ Coffee",smoothie:"🥤 Smoothie",tea:"🧊 Iced Tea",mocktail:"🍹 Mocktail",milkshake:"🥛 Milkshake",savory:"🥪 Savory",healthy:"🥗 Healthy"},
+  es:{coffee:"☕ Café",smoothie:"🥤 Smoothie",tea:"🧊 Té helado",mocktail:"🍹 Mocktail",milkshake:"🥛 Batido",savory:"🥪 Salado",healthy:"🥗 Saludable"}
+};
+
+let LANG = localStorage.getItem("leafy_lang") || "ar";
+function t(key){return (I18N[LANG]&&I18N[LANG][key])||I18N.ar[key]||key;}
+
+/* ===================== الحالة والتخزين ===================== */
+let menu = JSON.parse(localStorage.getItem("leafy_menu") || "null") || DEFAULT_MENU;
+let cart = JSON.parse(localStorage.getItem("leafy_cart") || "[]");
+let orders = JSON.parse(localStorage.getItem("leafy_orders") || "[]");
+let bookings = JSON.parse(localStorage.getItem("leafy_bookings") || "[]");
+let currentCat = "coffee";
+let orderCounter = parseInt(localStorage.getItem("leafy_orderCounter") || "1001");
+
+function save(){
+  localStorage.setItem("leafy_menu",JSON.stringify(menu));
+  localStorage.setItem("leafy_cart",JSON.stringify(cart));
+  localStorage.setItem("leafy_orders",JSON.stringify(orders));
+  localStorage.setItem("leafy_bookings",JSON.stringify(bookings));
+  localStorage.setItem("leafy_orderCounter",orderCounter);
+  localStorage.setItem("leafy_lang",LANG);
+}
+
+/* ===================== أدوات ===================== */
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove("show"),2500);
+}
+
+/* ===================== التنقل ===================== */
+document.querySelectorAll("#mainNav button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#mainNav button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.getElementById("page-"+b.dataset.page).classList.add("active");
+    if(b.dataset.page==="admin") renderAdmin();
+  };
+});
+
+/* ===================== اللغة ===================== */
+document.getElementById("langSelect").value = LANG;
+document.getElementById("langSelect").onchange = e=>{
+  LANG = e.target.value; save(); applyLang();
+};
+function applyLang(){
+  const dir = LANG==="ar" ? "rtl" : "ltr";
+  document.documentElement.dir = dir;
+  document.documentElement.lang = LANG;
+  document.body.dir = dir;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k = el.dataset.i18n;
+    if(I18N[LANG][k]) el.textContent = I18N[LANG][k];
+  });
+  renderTabs();
+  renderMenu();
+  renderGames();
+  renderCart();
+  renderAdmin();
+}
+
+/* ===================== القائمة ===================== */
+function renderTabs(){
+  const tabs = Object.keys(CAT_NAMES[LANG]);
+  document.getElementById("menuTabs").innerHTML = tabs.map(c=>
+    `<button class="${c===currentCat?'active':''}" onclick="setCat('${c}')">${CAT_NAMES[LANG][c]}</button>`
+  ).join("");
+}
+function setCat(c){currentCat=c;renderTabs();renderMenu();}
+function renderMenu(){
+  const items = menu.filter(m=>m.cat===currentCat);
+  document.getElementById("menuGrid").innerHTML = items.length ? items.map(m=>`
+    <div class="card">
+      <div class="icon">${m.icon||"🍃"}</div>
+      <div class="body">
+        <h3>${m.name}</h3>
+        <p class="desc">${m.desc||""}</p>
+        <div class="price">${m.price} دج</div>
+        <button class="add-btn" onclick="addToCart(${m.id})">+ ${t("sendOrder").split(" ")[0]==="Send"?"Add":"إضافة"}</button>
+      </div>
+    </div>`).join("") : `<p>لا توجد أصناف في هذه الفئة بعد.</p>`;
+}
+function addToCart(id){
+  const item = menu.find(m=>m.id===id);
+  if(!item) return;
+  const found = cart.find(c=>c.id===id);
+  if(found) found.qty++;
+  else cart.push({id:item.id,name:item.name,price:item.price,qty:1});
+  save(); renderCart(); toast(t("addedToCart"));
+}
+
+/* ===================== السلة ===================== */
+function toggleCart(){document.getElementById("cartPanel").classList.toggle("open");}
+function renderCart(){
+  const box=document.getElementById("cartItems");
+  if(!cart.length){box.innerHTML=`<p style="text-align:center;color:#999">${LANG==='ar'?'السلة فارغة':'Cart is empty'}</p>`;}
+  else{
+    box.innerHTML=cart.map(c=>`
+      <div class="cart-item">
+        <div style="flex:1">
+          <div class="ci-name">${c.name}</div>
+          <div class="ci-price">${c.price} دج</div>
+        </div>
+        <div class="qty">
+          <button onclick="changeQty(${c.id},-1)">−</button>
+          <span>${c.qty}</span>
+          <button onclick="changeQty(${c.id},1)">+</button>
+        </div>
+      </div>`).join("");
+  }
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  document.getElementById("cartTotal").textContent = total+" دج";
+  const count=cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById("cartCount").textContent=count;
+}
+function changeQty(id,delta){
+  const c=cart.find(x=>x.id===id);
+  if(!c) return;
+  c.qty+=delta;
+  if(c.qty<=0) cart=cart.filter(x=>x.id!==id);
+  save(); renderCart();
+}
+function sendOrder(){
+  if(!cart.length) return toast(LANG==='ar'?"السلة فارغة":"Cart is empty");
+  const name=document.getElementById("custName").value.trim();
+  const table=document.getElementById("tableNum").value.trim();
+  if(!name||!table) return toast(t("fillAll"));
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const order={
+    id:orderCounter++,
+    name, table,
+    items:JSON.parse(JSON.stringify(cart)),
+    total,
+    status:"pending",
+    time:new Date().toLocaleTimeString()
+  };
+  orders.unshift(order);
+  cart=[];
+  document.getElementById("custName").value="";
+  document.getElementById("tableNum").value="";
+  save(); renderCart(); renderAdmin();
+  toggleCart();
+  toast(t("orderSent"));
+  // تنبيه صوتي بسيط
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value=880; g.gain.value=0.15;
+    o.start(); o.stop(ctx.currentTime+0.15);
+  }catch(e){}
+}
+
+/* ===================== الألعاب ===================== */
+function renderGames(){
+  document.getElementById("gamesGrid").innerHTML = GAMES.map(g=>`
+    <div class="game-card">
+      <div class="g-icon">${g.icon}</div>
+      <h4>${g.name}</h4>
+    </div>`).join("");
+}
+
+/* ===================== الحجوزات ===================== */
+function submitBooking(){
+  const data={
+    name:document.getElementById("bkName").value.trim(),
+    phone:document.getElementById("bkPhone").value.trim(),
+    date:document.getElementById("bkDate").value,
+    people:document.getElementById("bkPeople").value,
+    occasion:document.getElementById("bkOccasion").value,
+    notes:document.getElementById("bkNotes").value.trim()
+  };
+  if(!data.name||!data.phone||!data.date) return toast(t("fillAll"));
+  bookings.unshift(data);
+  save(); renderAdmin();
+  ["bkName","bkPhone","bkDate","bkNotes"].forEach(id=>document.getElementById(id).value="");
+  toast(t("bookingSent"));
+}
+
+/* ===================== لوحة الإدارة ===================== */
+const ADMIN_EMAIL="admin@leafy.dz";
+const ADMIN_PASS="leafy123";
+let isAdmin = sessionStorage.getItem("leafy_admin")==="1";
+
+function adminLogin(){
+  const e=document.getElementById("admEmail").value.trim();
+  const p=document.getElementById("admPass").value;
+  if(e===ADMIN_EMAIL && p===ADMIN_PASS){
+    isAdmin=true; sessionStorage.setItem("leafy_admin","1");
+    renderAdmin(); toast(t("loginOk"));
+  } else toast(t("loginFail"));
+}
+function adminLogout(){
+  isAdmin=false; sessionStorage.removeItem("leafy_admin");
+  renderAdmin();
+}
+function adminTab(name,btn){
+  document.querySelectorAll(".admin-tabs button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".admin-section").forEach(s=>s.classList.remove("active"));
+  document.getElementById("admin-"+name).classList.add("active");
+}
+function renderAdmin(){
+  const loginBox=document.getElementById("adminLogin");
+  const panel=document.getElementById("adminPanel");
+  if(!isAdmin){loginBox.style.display="block";panel.style.display="none";return;}
+  loginBox.style.display="none";panel.style.display="block";
+
+  // جدول القائمة
+  document.querySelector("#menuTable tbody").innerHTML = menu.map(m=>`
+    <tr>
+      <td>${m.icon||"🍃"} ${m.name}</td>
+      <td>${CAT_NAMES[LANG][m.cat]||m.cat}</td>
+      <td>${m.price} دج</td>
+      <td>
+        <button class="btn-sm btn-edit" onclick="editMenuItem(${m.id})">${t("edit")}</button>
+        <button class="btn-sm btn-del" onclick="deleteMenuItem(${m.id})">${t("del")}</button>
+      </td>
+    </tr>`).join("");
+
+  // جدول الطلبات
+  document.querySelector("#ordersTable tbody").innerHTML = orders.length ? orders.map(o=>`
+    <tr>
+      <td><strong>#${o.table}</strong></td>
+      <td>${o.name}</td>
+      <td>${o.items.map(i=>`${i.name} ×${i.qty}`).join("<br>")}</td>
+      <td><strong>${o.total} دج</strong></td>
+      <td><span class="badge-status s-${o.status}">${t(o.status)}</span></td>
+      <td>
+        ${o.status!=="done"?`<button class="btn-sm btn-next" onclick="nextStatus(${o.id})">${t("next")}</button>`:""}
+      </td>
+    </tr>`).join("") : `<tr><td colspan="6" style="text-align:center;color:#999">لا توجد طلبات</td></tr>`;
+
+  // جدول الحجوزات
+  document.querySelector("#bookingsTable tbody").innerHTML = bookings.length ? bookings.map(b=>`
+    <tr>
+      <td>${b.name}</td><td>${b.phone}</td><td>${b.date}</td>
+      <td>${b.people}</td><td>${b.occasion}</td><td>${b.notes||"-"}</td>
+    </tr>`).join("") : `<tr><td colspan="6" style="text-align:center;color:#999">لا توجد حجوزات</td></tr>`;
+}
+
+function addMenuItem(){
+  const name=document.getElementById("afName").value.trim();
+  const cat=document.getElementById("afCat").value;
+  const desc=document.getElementById("afDesc").value.trim();
+  const price=parseFloat(document.getElementById("afPrice").value);
+  const icon=document.getElementById("afIcon").value.trim()||"🍃";
+  if(!name||!price) return toast(t("fillAll"));
+  const id=Math.max(0,...menu.map(m=>m.id))+1;
+  menu.push({id,cat,name,desc,price,icon});
+  save();
+  ["afName","afDesc","afPrice","afIcon"].forEach(x=>document.getElementById(x).value="");
+  renderMenu(); renderAdmin(); toast("✅");
+}
+function editMenuItem(id){
+  const m=menu.find(x=>x.id===id);
+  const newName=prompt("اسم الصنف:",m.name); if(newName===null)return;
+  const newPrice=prompt("السعر:",m.price); if(newPrice===null)return;
+  const newDesc=prompt("الوصف:",m.desc||""); if(newDesc===null)return;
+  m.name=newName; m.price=parseFloat(newPrice)||m.price; m.desc=newDesc;
+  save(); renderMenu(); renderAdmin();
+}
+function deleteMenuItem(id){
+  if(!confirm("حذف هذا الصنف؟")) return;
+  menu=menu.filter(m=>m.id!==id); save(); renderMenu(); renderAdmin();
+}
+function nextStatus(orderId){
+  const o=orders.find(x=>x.id===orderId); if(!o)return;
+  const flow=["pending","preparing","done"];
+  const i=flow.indexOf(o.status);
+  o.status=flow[Math.min(i+1,flow.length-1)];
+  save(); renderAdmin();
+}
+
+/* ===================== الإقلاع ===================== */
+applyLang();
+renderCart();
+</script>
+</body>
+</html>
